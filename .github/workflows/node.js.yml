@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: [api-gateway, menu-service, order-service, inventory-service, customer-service, payment-service]
+        service: [api-gateway, menu-service, order-service, inventory-service, customer-service, payment]
 
     steps:
     - uses: actions/checkout@v3
