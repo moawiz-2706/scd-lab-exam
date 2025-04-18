@@ -1,0 +1,101 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:6.0
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - cafe-network
+
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - MENU_SERVICE=http://menu-service:3001
+      - ORDER_SERVICE=http://order-service:3002
+      - INVENTORY_SERVICE=http://inventory-service:3003
+      - CUSTOMER_SERVICE=http://customer-service:3004
+      - PAYMENT_SERVICE=http://payment-service:3005
+    depends_on:
+      - mongodb
+      - menu-service
+      - order-service
+      - inventory-service
+      - customer-service
+      - payment-service
+    networks:
+      - cafe-network
+
+  menu-service:
+    build: ./menu-service
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - MONGO_URI=mongodb://mongodb:27017/cafe-menu
+    depends_on:
+      - mongodb
+    networks:
+      - cafe-network
+
+  order-service:
+    build: ./order-service
+    ports:
+      - "3002:3002"
+    environment:
+      - PORT=3002
+      - MONGO_URI=mongodb://mongodb:27017/cafe-orders
+      - API_GATEWAY=http://api-gateway:3000
+    depends_on:
+      - mongodb
+    networks:
+      - cafe-network
+
+  inventory-service:
+    build: ./inventory-service
+    ports:
+      - "3003:3003"
+    environment:
+      - PORT=3003
+      - MONGO_URI=mongodb://mongodb:27017/cafe-inventory
+    depends_on:
+      - mongodb
+    networks:
+      - cafe-network
+
+  customer-service:
+    build: ./customer-service
+    ports:
+      - "3004:3004"
+    environment:
+      - PORT=3004
+      - MONGO_URI=mongodb://mongodb:27017/cafe-customers
+    depends_on:
+      - mongodb
+    networks:
+      - cafe-network
+
+  payment-service:
+    build: ./payment-service
+    ports:
+      - "3005:3005"
+    environment:
+      - PORT=3005
+      - MONGO_URI=mongodb://mongodb:27017/cafe-payments
+      - API_GATEWAY=http://api-gateway:3000
+    depends_on:
+      - mongodb
+    networks:
+      - cafe-network
+
+networks:
+  cafe-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
